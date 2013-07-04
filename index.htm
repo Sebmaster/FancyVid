@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <script  src="FancyVid.js"></script>
+        <script>
+            window.onload = function () {
+                var x = document.getElementById('elem');
+                var fancy = new FancyVid(x);
+                fancy.on('load', function () {
+                    fancy.play('test.flv');
+                });
+            };
+        </script>
+    </head>
+
+    <body id="elem">
+        
+    </body>
+</html>
