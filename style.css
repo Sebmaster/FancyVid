@@ -1,0 +1,24 @@
+﻿body {
+    padding: 0;
+    margin: 0;
+}
+
+.fancyVid-inline {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9; FIXME */
+    height: 0;
+}
+
+.fancyVid {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.fancyVid > .fancyVid-player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}

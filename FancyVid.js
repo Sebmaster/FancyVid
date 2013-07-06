@@ -42,8 +42,7 @@
 		flash.type = 'application/x-shockwave-flash';
 		flash.allowScriptAccess = 'always';
 		flash.src = this.options.swfPath + '?onload=' + code;
-		flash.width = '100%';
-		flash.height = '100%';
+		flash.className = 'fancyVid-player';
 
 		this.element.appendChild(flash);
 	};
