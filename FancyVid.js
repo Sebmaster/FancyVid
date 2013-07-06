@@ -1,11 +1,7 @@
 ﻿(function () {
 	"use strict";
 
-	var instanceCounter = 0;
-
-	function generateVariableName() {
-		return 'FancyVid_Global_' + (instanceCounter++);
-	}
+	var callbacks = [];
 
 	function extend(destination, source) {
 		for (var property in source) {
@@ -20,6 +16,9 @@
 	function FancyVid(elem, options) {
 		if (!options) options = {};
 
+		this.instanceId = callbacks.length;
+		callbacks[callbacks.length] = {};
+
 		this.element = elem;
 		this.videoTag = null;
 		this.options = extend(options, {
@@ -27,36 +26,36 @@
 		});
 
 		this._handlers = { load: [], error: [] };
-
-		this._init();
 	}
 
-	FancyVid.prototype._init = function () {
-		var onLoad = generateVariableName();
-		window[onLoad] = function () {
-			delete window[onLoad];
+	FancyVid._flashCallback = function (id, event, args) {
+		if (callbacks[id][event]) {
+			callbacks[id][event].apply(null, args);
+		}
+	};
 
-			this.videoTag = flash;
-			this._loaded();
-		}.bind(this);
-
-		var onError = generateVariableName();
-		window[onError] = function (msg) {
-			this._emit('error', msg);
-		}.bind(this);
+	FancyVid.prototype._initFlash = function (loadCb, errorCb) {
+		var that = this;
 
 		var flash = document.createElement('embed');
-		flash.id = flash.name = generateVariableName();
+		flash.id = flash.name = 'FancyVid_' + this.instanceId;
 		flash.type = 'application/x-shockwave-flash';
 		flash.src = this.options.swfPath;
 		flash.className = 'fancyVid-player';
 
-		var attr = document.createAttribute('flashVars');
-		attr.nodeValue = 'onload=' + onLoad + "&onerror=" + onError;
-		flash.setAttributeNode(attr);
-
 		attr = document.createAttribute('allowScriptAccess');
 		attr.nodeValue = 'always';
+		flash.setAttributeNode(attr);
+
+		callbacks[this.instanceId].load = loadCb.bind(this, flash);
+		callbacks[this.instanceId].error = function () {
+			that.element.removeChild(flash);
+
+			errorCb.bind(that)();
+		};
+
+		var attr = document.createAttribute('flashVars');
+		attr.nodeValue = 'callback=FancyVid._flashCallback&id=' + this.instanceId;
 		flash.setAttributeNode(attr);
 
 		this.element.appendChild(flash);
@@ -85,13 +84,30 @@
 		}
 	};
 
-	FancyVid.prototype.play = function (src) {
-		if (this.videoTag.tagName === 'EMBED') { // flash
+	FancyVid.prototype.play = function (src, type) {
+		if (!(src instanceof Array)) {
+			src = [src];
+		}
+
+		var thisSource = src.shift();
+		var nowSrc = thisSource.src ? thisSource.src : thisSource;
+		var nowType = thisSource.type ? thisSource.type : type;
+
+		if (nowType === 'video/x-flv' || nowType === 'video/flash') {
 			var link = document.createElement('a');
-			link.href = src;
-			this.videoTag.setSource(link.href);
-			this.videoTag.playVideo();
-		} else { // video
+			link.href = nowSrc;
+
+			this._initFlash(function (elem) {
+				elem.loadVideo(link.href);
+				callbacks[this.instanceId].ready = elem.playVideo.bind(elem);
+			}, function (data) {
+				if (src.length) {
+					this.play(src, type);
+				} else {
+					this._emit('error', data);
+				}
+			});
+		} else {
 
 		}
 	};

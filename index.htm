@@ -8,9 +8,7 @@
             window.onload = function () {
                 var x = document.getElementById('elem');
                 var fancy = new FancyVid(x);
-                fancy.on('load', function () {
-                    fancy.play('test.flv');
-                });
+                fancy.play(['test.mp4', 'test.flv'], 'video/x-flv');
             };
         </script>
     </head>
