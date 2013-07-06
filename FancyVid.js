@@ -48,9 +48,16 @@
 		var flash = document.createElement('embed');
 		flash.id = flash.name = generateVariableName();
 		flash.type = 'application/x-shockwave-flash';
-		flash.allowScriptAccess = 'always';
-		flash.src = this.options.swfPath + '?onload=' + onLoad + "&onerror=" + onError;
+		flash.src = this.options.swfPath;
 		flash.className = 'fancyVid-player';
+
+		var attr = document.createAttribute('flashVars');
+		attr.nodeValue = 'onload=' + onLoad + "&onerror=" + onError;
+		flash.setAttributeNode(attr);
+
+		attr = document.createAttribute('allowScriptAccess');
+		attr.nodeValue = 'always';
+		flash.setAttributeNode(attr);
 
 		this.element.appendChild(flash);
 	};
