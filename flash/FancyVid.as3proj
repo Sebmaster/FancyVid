@@ -5,7 +5,7 @@
     <movie outputType="Application" />
     <movie input="" />
     <movie path="FancyVid.swf" />
-    <movie fps="30" />
+    <movie fps="60" />
     <movie width="800" />
     <movie height="600" />
     <movie version="9" />
@@ -15,7 +15,7 @@
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
-    <class path="src" />
+    <class path="." />
   </classpaths>
   <!-- Build options -->
   <build>
@@ -63,7 +63,7 @@
   </rslPaths>
   <!-- Intrinsic Libraries -->
   <intrinsics>
-    <!-- example: <element path="..." /> -->
+    <element path="Library\AS3\frameworks\FlashIDE" />
   </intrinsics>
   <!-- Assets to embed into the output SWF -->
   <library>
