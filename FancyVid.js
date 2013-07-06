@@ -3,6 +3,10 @@
 
 	var instanceCounter = 0;
 
+	function generateVariableName() {
+		return 'FancyVid_Global_' + (instanceCounter++);
+	}
+
 	function extend(destination, source) {
 		for (var property in source) {
 			if (typeof destination[property] === 'undefined') {
@@ -22,26 +26,30 @@
 			swfPath: 'flash/FancyVid.swf'
 		});
 
-		this._handlers = { load: [] };
+		this._handlers = { load: [], error: [] };
 
 		this._init();
 	}
 
 	FancyVid.prototype._init = function () {
-		var code = 'FancyVid_Instance_' + (instanceCounter++);
-		window[code] = function () {
-			delete window[code];
+		var onLoad = generateVariableName();
+		window[onLoad] = function () {
+			delete window[onLoad];
 
 			this.videoTag = flash;
 			this._loaded();
 		}.bind(this);
 
+		var onError = generateVariableName();
+		window[onError] = function (msg) {
+			this._emit('error', msg);
+		}.bind(this);
+
 		var flash = document.createElement('embed');
-		flash.id = code;
-		flash.name = code;
+		flash.id = flash.name = generateVariableName();
 		flash.type = 'application/x-shockwave-flash';
 		flash.allowScriptAccess = 'always';
-		flash.src = this.options.swfPath + '?onload=' + code;
+		flash.src = this.options.swfPath + '?onload=' + onLoad + "onerror=" + onError;
 		flash.className = 'fancyVid-player';
 
 		this.element.appendChild(flash);

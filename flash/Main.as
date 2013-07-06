@@ -56,6 +56,7 @@ package
 		
 		private function failed(e : VideoEvent) : void {
 			if (e.state == VideoState.CONNECTION_ERROR || e.state == VideoState.DISCONNECTED) {
+				ExternalInterface.call(root.loaderInfo.parameters.onerror);
 				for (var i : int = 0; i < errorCallbacks.length; ++i) {
 					errorCallbacks[i]();
 				}
