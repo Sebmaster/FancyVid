@@ -13,8 +13,6 @@ package
 		
 		private var flvPlayback : FLVPlayback;
 		
-		private var errorCallbacks : Array;
-		
 		public function Main() : void {
 			if (stage) init();
 			else addEventListener(Event.ADDED_TO_STAGE, init);
@@ -39,7 +37,6 @@ package
 				ExternalInterface.marshallExceptions = true;
 				ExternalInterface.addCallback("playVideo", play);
 				ExternalInterface.addCallback("pauseVideo", pause);
-				ExternalInterface.addCallback("onError", addErrorCallback);
 				
 				ExternalInterface.call(root.loaderInfo.parameters.onload);
 			}
@@ -50,16 +47,9 @@ package
 			flvPlayback.height = stage.stageHeight;
 		}
 		
-		private function addErrorCallback(fn : Function) : void {
-			errorCallbacks.push(fn);
-		}
-		
 		private function failed(e : VideoEvent) : void {
 			if (e.state == VideoState.CONNECTION_ERROR || e.state == VideoState.DISCONNECTED) {
 				ExternalInterface.call(root.loaderInfo.parameters.onerror);
-				for (var i : int = 0; i < errorCallbacks.length; ++i) {
-					errorCallbacks[i]();
-				}
 			}
 		}
 		
