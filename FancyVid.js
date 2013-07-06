@@ -61,11 +61,6 @@
 		this.element.appendChild(flash);
 	};
 
-	FancyVid.prototype._loaded = function () {
-		this.isLoaded = true;
-		this._emit('load');
-	};
-
 	FancyVid.prototype.on = function (evt, cb) {
 		if (this._handlers[evt]) {
 			this._handlers[evt][this._handlers[evt].length] = cb;
