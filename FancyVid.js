@@ -15,7 +15,7 @@
 		}
 
 		return destination;
-	};
+	}
 
 	function FancyVid(elem, options) {
 		if (!options) options = {};
