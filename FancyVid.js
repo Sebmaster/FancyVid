@@ -49,7 +49,7 @@
 		flash.id = flash.name = generateVariableName();
 		flash.type = 'application/x-shockwave-flash';
 		flash.allowScriptAccess = 'always';
-		flash.src = this.options.swfPath + '?onload=' + onLoad + "onerror=" + onError;
+		flash.src = this.options.swfPath + '?onload=' + onLoad + "&onerror=" + onError;
 		flash.className = 'fancyVid-player';
 
 		this.element.appendChild(flash);
