@@ -73,7 +73,9 @@
 
 	FancyVid.prototype.play = function (src) {
 		if (this.videoTag.tagName === 'EMBED') { // flash
-			this.videoTag.playVideo(src);
+			var link = document.createElement('a');
+			link.href = src;
+			this.videoTag.playVideo(link.href);
 		} else { // video
 
 		}
