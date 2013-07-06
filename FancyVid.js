@@ -82,7 +82,8 @@
 		if (this.videoTag.tagName === 'EMBED') { // flash
 			var link = document.createElement('a');
 			link.href = src;
-			this.videoTag.playVideo(link.href);
+			this.videoTag.setSource(link.href);
+			this.videoTag.playVideo();
 		} else { // video
 
 		}

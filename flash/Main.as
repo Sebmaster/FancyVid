@@ -35,6 +35,7 @@ package
 			
 			if (ExternalInterface.available) {
 				ExternalInterface.marshallExceptions = true;
+				ExternalInterface.addCallback("setSource", setSource);
 				ExternalInterface.addCallback("playVideo", play);
 				ExternalInterface.addCallback("pauseVideo", pause);
 				
@@ -53,8 +54,12 @@ package
 			}
 		}
 		
-		private function play(src : String) : void {
-			flvPlayback.play(src);
+		private function setSource(src : String) : void {
+			flvPlayback.source = src;
+		}
+		
+		private function play() : void {
+			flvPlayback.play();
 		}
 		
 		private function pause() : void {
