@@ -58,6 +58,8 @@ package {
 		private function failed(e : VideoEvent) : void {
 			if (e.state == VideoState.CONNECTION_ERROR || e.state == VideoState.DISCONNECTED) {
 				callJS('error');
+			} else if (e.state == VideoState.PLAYING) {
+				callJS('playing');
 			}
 		}
 		

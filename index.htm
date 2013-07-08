@@ -4,16 +4,16 @@
         <title></title>
         <link rel="stylesheet" href="style.css">
         <script  src="FancyVid.js"></script>
-        <script>
-            window.onload = function () {
-                var x = document.getElementById('elem');
-                var fancy = new FancyVid(x);
-                fancy.play(['test.mp4', 'test.flv'], 'video/x-flv');
-            };
-        </script>
     </head>
 
     <body>
-        <div id="elem" class="fancyVid"></div>
+        <video class="fancyVid" autoplay>
+            <source src="test.flv">
+        </video>
+        <script>
+            var x = document.getElementsByClassName('fancyVid')[0];
+            var fv = new FancyVid(x);
+            fv.autoFallback();
+        </script>
     </body>
 </html>

@@ -20,7 +20,6 @@
 		callbacks[callbacks.length] = {};
 
 		this.element = elem;
-		this.videoTag = null;
 		this.options = extend(options, {
 			swfPath: 'flash/FancyVid.swf'
 		});
@@ -41,16 +40,18 @@
 		flash.id = flash.name = 'FancyVid_' + this.instanceId;
 		flash.type = 'application/x-shockwave-flash';
 		flash.src = this.options.swfPath;
-		flash.className = 'fancyVid-player';
+		flash.className = this.element.className;
+		flash.style.position = 'absolute';
+		flash.style.left = '-99999px';
 
 		attr = document.createAttribute('allowScriptAccess');
 		attr.nodeValue = 'always';
 		flash.setAttributeNode(attr);
 
-		callbacks[this.instanceId].load = loadCb.bind(this, flash);
+		callbacks[this.instanceId].load = function () {
+			loadCb.bind(that)(flash);
+		};
 		callbacks[this.instanceId].error = function () {
-			that.element.removeChild(flash);
-
 			errorCb.bind(that)();
 		};
 
@@ -58,7 +59,8 @@
 		attr.nodeValue = 'callback=FancyVid._flashCallback&id=' + this.instanceId;
 		flash.setAttributeNode(attr);
 
-		this.element.appendChild(flash);
+		this.element.parentNode.replaceChild(flash, this.element);
+		this.element = flash;
 	};
 
 	FancyVid.prototype.on = function (evt, cb) {
@@ -79,32 +81,64 @@
 		}
 	};
 
-	FancyVid.prototype.play = function (src, type) {
-		if (!(src instanceof Array)) {
-			src = [src];
-		}
+	FancyVid.prototype.autoFallback = function () {
+		var that = this;
 
-		var thisSource = src.shift();
-		var nowSrc = thisSource.src ? thisSource.src : thisSource;
-		var nowType = thisSource.type ? thisSource.type : type;
-
-		if (nowType === 'video/x-flv' || nowType === 'video/flash') {
-			var link = document.createElement('a');
-			link.href = nowSrc;
-
-			this._initFlash(function (elem) {
-				elem.loadVideo(link.href);
-				callbacks[this.instanceId].ready = elem.playVideo.bind(elem);
-			}, function (data) {
-				if (src.length) {
-					this.play(src, type);
-				} else {
-					this._emit('error', data);
+		var lastNode = null;
+		if (this.element.canPlayType) {
+			for (var i = 0; i < this.element.childNodes.length; ++i) {
+				var node = this.element.childNodes[i];
+				if (node.tagName === 'SOURCE' && (!node.type || this.element.canPlayType(node.type) !== '')) {
+					lastNode = node;
 				}
-			});
-		} else {
-
+			}
 		}
+
+		if (!lastNode) {
+			this.fallback();
+		} else {
+			lastNode.onerror = function () {
+				that.fallback();
+			};
+		}
+	};
+
+	FancyVid.prototype.fallback = function () {
+		var sources = [];
+
+		for (var i = 0; i < this.element.childNodes.length; ++i) {
+			if (this.element.childNodes[i].tagName === 'SOURCE') {
+				sources[sources.length] = { src: this.element.childNodes[i].src, type: this.element.childNodes[i].type };
+			}
+		}
+
+		this.playFlash(sources);
+	};
+
+	FancyVid.prototype.playFlash = function (src) {
+		var nowSrc = src.shift();
+		var link = document.createElement('a');
+		link.href = nowSrc.src ? nowSrc.src : nowSrc;
+
+		this._initFlash(function (elem) {
+			elem.loadVideo(link.href);
+			callbacks[this.instanceId].ready = elem.playVideo.bind(elem);
+
+			var that = this;
+			callbacks[this.instanceId].playing = function () {
+				callbacks[that.instanceId].playing = null;
+
+				elem.style.position = '';
+				elem.style.left = '';
+			};
+		}, function (data) {
+			if (src.length) {
+				this.playFlash(src);
+			} else {
+				this.element.parentNode.removeChild(this.element);
+				this._emit('error', data);
+			}
+		});
 	};
 
 	self.FancyVid = FancyVid;
