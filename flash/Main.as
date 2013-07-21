@@ -1,17 +1,21 @@
 package {
-	import fl.video.FLVPlayback;
-	import fl.video.VideoEvent;
-	import fl.video.VideoState;
-	import fl.video.VideoError;
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
+	import flash.events.NetStatusEvent;
+	import flash.events.SecurityErrorEvent;
 	import flash.external.ExternalInterface;
+	import flash.media.Video;
+	import flash.net.LocalConnection;
+	import flash.net.NetConnection;
+	import flash.net.NetStream;
+	import flash.system.Security;
 	
 	public class Main extends Sprite {
 		
-		private var flvPlayback : FLVPlayback;
+		private var stream : NetStream;
+		private var vid : Video = new Video();
 		
 		public function Main() : void {
 			if (stage)
@@ -23,22 +27,19 @@ package {
 		private function init(e : Event=null) : void {
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			
+			Security.allowDomain("*");
 			stage.align = StageAlign.TOP_LEFT;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			
-			flvPlayback = new FLVPlayback();
-			flvPlayback.width = stage.stageWidth;
-			flvPlayback.height = stage.stageHeight;
+			vid.width = stage.stageWidth;
+			vid.height = stage.stageHeight;
+			vid.smoothing = true;
 			
 			stage.addEventListener(Event.RESIZE, stageResize);
-			stage.addChild(flvPlayback);
-			
-			flvPlayback.addEventListener(VideoEvent.STATE_CHANGE, failed);
-			flvPlayback.addEventListener(VideoEvent.READY, ready);
+			stage.addChild(vid);
 			
 			if (ExternalInterface.available) {
 				ExternalInterface.marshallExceptions = true;
-				ExternalInterface.addCallback("loadVideo", load);
 				ExternalInterface.addCallback("playVideo", play);
 				ExternalInterface.addCallback("pauseVideo", pause);
 				
@@ -46,37 +47,35 @@ package {
 			}
 		}
 		
-		private function callJS(eventName : String, args : Array = undefined) : void {
+		private function callJS(eventName : String, args : Array=undefined) : void {
 			ExternalInterface.call(root.loaderInfo.parameters.callback, root.loaderInfo.parameters.id, eventName, args);
 		}
 		
 		private function stageResize(e : Event) : void {
-			flvPlayback.width = stage.stageWidth;
-			flvPlayback.height = stage.stageHeight;
+			vid.width = stage.stageWidth;
+			vid.height = stage.stageHeight;
 		}
 		
-		private function failed(e : VideoEvent) : void {
-			if (e.state == VideoState.CONNECTION_ERROR || e.state == VideoState.DISCONNECTED) {
-				callJS('error');
-			} else if (e.state == VideoState.PLAYING) {
-				callJS('playing');
-			}
-		}
-		
-		private function ready(e : VideoEvent) : void {
-			callJS('ready');
-		}
-		
-		private function load(src : String) : void {
-			flvPlayback.load(src);
-		}
-		
-		private function play() : void {
-			flvPlayback.play();
+		private function play(url : String) : void {
+			var conn : NetConnection = new NetConnection();
+			conn.connect(null);
+			
+			stream = new NetStream(conn);
+			
+			stream.addEventListener(NetStatusEvent.NET_STATUS, function(evt : NetStatusEvent) : void {
+				if (evt.info.level == 'error') {
+					callJS('error');
+				}
+			});
+			
+			vid.attachNetStream(stream);
+			
+			stream.play(url);
+			callJS('playing');
 		}
 		
 		private function pause() : void {
-			flvPlayback.pause();
+			stream.pause();
 		}
 	}
 }

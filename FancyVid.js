@@ -124,16 +124,15 @@
 		link.href = nowSrc.src ? nowSrc.src : nowSrc;
 
 		this._initFlash(function (elem) {
-			elem.loadVideo(link.href);
-			callbacks[this.instanceId].ready = elem.playVideo.bind(elem);
-
 			var that = this;
+
 			callbacks[this.instanceId].playing = function () {
 				callbacks[that.instanceId].playing = null;
 
 				elem.style.position = '';
 				elem.style.left = '';
 			};
+			elem.playVideo(link.href);
 		}, function (data) {
 			if (src.length) {
 				this.playFlash(src);
