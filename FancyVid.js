@@ -126,11 +126,13 @@
 		this._initFlash(function (elem) {
 			var that = this;
 
-			callbacks[this.instanceId].playing = function () {
+			callbacks[this.instanceId].playing = function (args) {
 				callbacks[that.instanceId].playing = null;
 
 				elem.style.position = '';
 				elem.style.left = '';
+				elem.style.width = args.width + 'px';
+				elem.style.height = args.height + 'px';
 			};
 			elem.playVideo(link.href);
 		}, function (data) {

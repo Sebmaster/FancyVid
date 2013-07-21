@@ -31,8 +31,7 @@ package {
 			stage.align = StageAlign.TOP_LEFT;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			
-			vid.width = stage.stageWidth;
-			vid.height = stage.stageHeight;
+			stageResize(null);
 			vid.smoothing = true;
 			
 			stage.addEventListener(Event.RESIZE, stageResize);
@@ -62,16 +61,22 @@ package {
 			
 			stream = new NetStream(conn);
 			
-			stream.addEventListener(NetStatusEvent.NET_STATUS, function(evt : NetStatusEvent) : void {
-				if (evt.info.level == 'error') {
-					callJS('error');
-				}
-			});
+			stream.addEventListener(NetStatusEvent.NET_STATUS, statusChange);
 			
 			vid.attachNetStream(stream);
 			
 			stream.play(url);
-			callJS('playing');
+		}
+		
+		private function statusChange(evt : NetStatusEvent) : void {
+			if (evt.info.code == "NetStream.Play.Start") {
+				stream.removeEventListener(NetStatusEvent.NET_STATUS, statusChange);
+				callJS('playing', [{width: vid.videoWidth, height: vid.videoHeight}]);
+			} else {
+				if (evt.info.level == 'error') {
+					callJS('error');
+				}
+			}
 		}
 		
 		private function pause() : void {
