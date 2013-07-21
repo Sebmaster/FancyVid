@@ -19,6 +19,7 @@
 		this.instanceId = callbacks.length;
 		callbacks[callbacks.length] = {};
 
+		this.fallbacked = false;
 		this.element = elem;
 		this.options = extend(options, {
 			swfPath: 'flash/FancyVid.swf'
@@ -97,13 +98,15 @@
 		if (!lastNode) {
 			this.fallback();
 		} else {
-			lastNode.onerror = function () {
-				that.fallback();
-			};
+			this.element.onerror = that.fallback.bind(that);
+			lastNode.onerror = that.fallback.bind(that);
 		}
 	};
 
 	FancyVid.prototype.fallback = function () {
+		if (this.fallbacked) return;
+
+		this.fallbacked = true;
 		var sources = [];
 
 		for (var i = 0; i < this.element.childNodes.length; ++i) {
